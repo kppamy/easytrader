@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import anyjson as json
+import json
+import better_exceptions
 import click
 import dill
 
 import easytrader
-from easytrader.helpers import disable_log
 
 ACCOUNT_OBJECT_FILE = 'account.session'
 
@@ -20,7 +20,7 @@ ACCOUNT_OBJECT_FILE = 'account.session'
 def main(prepare, use, do, get, params, debug):
     if get is not None:
         do = get
-    if prepare is not None and use in ['ht', 'yjb', 'yh', 'gf', 'xq']:
+    if prepare is not None and use in ['ht_client', 'yjb', 'yh_client','yh','ht', 'gf', 'xq']:
         user = easytrader.use(use, debug)
         user.prepare(prepare)
         with open(ACCOUNT_OBJECT_FILE, 'wb') as f:
@@ -29,14 +29,12 @@ def main(prepare, use, do, get, params, debug):
         with open(ACCOUNT_OBJECT_FILE, 'rb') as f:
             user = dill.load(f)
 
-        if not debug:
-            disable_log()
-        if len(params) > 0:
-            result = getattr(user, do)(*params)
-        else:
+        if get is not None:
             result = getattr(user, do)
+        else:
+            result = getattr(user, do)(*params)
 
-        json_result = json.dumps(result)
+        json_result = json.dumps(result, indent=4, ensure_ascii=False, sort_keys=True)
         click.echo(json_result)
 
 
